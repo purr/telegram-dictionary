@@ -6,10 +6,13 @@ A Telegram bot that works in inline mode to lookup definitions of words in publi
 
 - **Inline Mode**: Works in any chat by typing `@your_bot_name` followed by the word to lookup
 - **Debounce Implementation**: Waits for the user to finish typing before searching
-- **Multiple Dictionaries**: Looks up definitions in public dictionaries (currently Free Dictionary API)
+- **Multiple Dictionaries**: Looks up definitions in public dictionaries (Free Dictionary API and WordNet)
+- **API Fallback**: If a word isn't found in the primary dictionary, it falls back to WordNet
+- **Multiple Results**: Shows multiple definitions, synonyms, and examples from WordNet
 - **Rich Results**: Returns formatted definitions with phonetics, meanings, examples, and more
 - **Detailed View**: Clicking on results shows comprehensive information about the word
 - **Error Handling**: Provides notifications if no word has been found
+- **No API Keys Required**: Uses freely available APIs and local libraries for lookups
 
 ## Requirements
 
@@ -17,6 +20,7 @@ A Telegram bot that works in inline mode to lookup definitions of words in publi
 - aiogram 3.3.0+
 - python-dotenv
 - requests
+- nltk
 
 ## Setup
 
@@ -33,7 +37,13 @@ A Telegram bot that works in inline mode to lookup definitions of words in publi
    pip install -r requirements.txt
    ```
 
-3. Create a Telegram bot using BotFather:
+3. Download WordNet data:
+
+   ```
+   python -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
+   ```
+
+4. Create a Telegram bot using BotFather:
 
    - Open Telegram and search for `@BotFather` 🤖
    - Send `/newbot` command and follow the instructions
@@ -41,13 +51,13 @@ A Telegram bot that works in inline mode to lookup definitions of words in publi
    - Enable inline mode for your bot by sending `/setinline` to BotFather
    - Set the inline placeholder text (e.g., "Type a word to lookup")
 
-4. Create a `.env` file in the project directory and add your bot token:
+5. Create a `.env` file in the project directory and add your bot token:
 
    ```
    BOT_TOKEN=your_telegram_bot_token_here
    ```
 
-5. Run the bot:
+6. Run the bot:
    ```
    python run.py
    ```
@@ -64,6 +74,8 @@ A Telegram bot that works in inline mode to lookup definitions of words in publi
 
 4. For more detailed information, tap on the "Detailed information" option.
 
+5. If the word isn't found in the primary dictionary, it will automatically check WordNet and show those results instead.
+
 ## How It Works
 
 1. The bot monitors inline queries sent to it 📡
@@ -71,7 +83,9 @@ A Telegram bot that works in inline mode to lookup definitions of words in publi
 3. The bot waits for the user to finish typing (using a debounce technique) ⌨️
 4. It then looks up the word in the Free Dictionary API 🔎
 5. If a definition is found, it formats and returns it as an inline result ✅
-6. If no definition is found, it notifies the user ❌
+6. If no definition is found in the primary dictionary, it falls back to WordNet 📚
+7. If found in WordNet, it displays multiple definitions with synonyms and examples
+8. If no definition is found in any dictionary, it notifies the user ❌
 
 ## Project Structure
 
@@ -89,6 +103,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgements
 
 - [Free Dictionary API](https://dictionaryapi.dev/) for providing free dictionary data
+- [NLTK WordNet](https://www.nltk.org/howto/wordnet.html) for comprehensive lexical database
 - [aiogram](https://docs.aiogram.dev/) for the Telegram Bot framework
 
 ## Contributing

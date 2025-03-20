@@ -58,42 +58,69 @@ async def inline_query_handler(query: InlineQuery):
     data = await DictionaryService.lookup_word(text)
 
     if data:
-        # Word found, create results
-        brief_definition = DictionaryService.format_brief_definition(data, text)
-        basic_definition = DictionaryService.format_definition(data, text)
-        detailed_definition = DictionaryService.format_detailed_definition(data, text)
-
-        results = [
-            InlineQueryResultArticle(
-                id="1",
-                title=f"📚 {text.capitalize()}",
-                description=brief_definition,
-                input_message_content=InputTextMessageContent(
-                    message_text=basic_definition, parse_mode=ParseMode.HTML
-                ),
-                thumb_url="https://img.icons8.com/color/48/000000/book.png",
-                thumb_width=48,
-                thumb_height=48,
+        source = data.get("source")
+        # Create results based on the source
+        if source == "dictionary":
+            # Word found in primary dictionary, create results
+            brief_definition = DictionaryService.format_brief_definition(data, text)
+            basic_definition = DictionaryService.format_definition(data, text)
+            detailed_definition = DictionaryService.format_detailed_definition(
+                data, text
             )
-        ]
 
-        # Add detailed definition option
-        if detailed_definition:
-            results.append(
+            results = [
                 InlineQueryResultArticle(
-                    id="2",
-                    title=f"ℹ️ Detailed information for '{text}'",
-                    description="View all meanings, examples, and related words",
+                    id="1",
+                    title=f"📚 {text.capitalize()}",
+                    description=brief_definition,
                     input_message_content=InputTextMessageContent(
-                        message_text=detailed_definition, parse_mode=ParseMode.HTML
+                        message_text=basic_definition, parse_mode=ParseMode.HTML
                     ),
-                    thumb_url="https://img.icons8.com/color/48/000000/info.png",
+                    thumb_url="https://img.icons8.com/color/48/000000/book.png",
                     thumb_width=48,
                     thumb_height=48,
                 )
+            ]
+
+            # Add detailed definition option
+            if detailed_definition:
+                results.append(
+                    InlineQueryResultArticle(
+                        id="2",
+                        title=f"ℹ️ Detailed information for '{text}'",
+                        description="View all meanings, examples, and related words",
+                        input_message_content=InputTextMessageContent(
+                            message_text=detailed_definition, parse_mode=ParseMode.HTML
+                        ),
+                        thumb_url="https://img.icons8.com/color/48/000000/info.png",
+                        thumb_width=48,
+                        thumb_height=48,
+                    )
+                )
+        elif source == "wordnet":
+            # Word found in WordNet, create only one comprehensive result
+            brief_definition = DictionaryService.format_brief_definition(data, text)
+            complete_wordnet_definition = (
+                DictionaryService.format_complete_wordnet_definition(data, text)
             )
+
+            # Only one button for WordNet with all info
+            results = [
+                InlineQueryResultArticle(
+                    id="1",
+                    title=f"📚 {text.capitalize()} (WordNet)",
+                    description=brief_definition,
+                    input_message_content=InputTextMessageContent(
+                        message_text=complete_wordnet_definition,
+                        parse_mode=ParseMode.HTML,
+                    ),
+                    thumb_url="https://img.icons8.com/color/48/000000/graduation-cap.png",
+                    thumb_width=48,
+                    thumb_height=48,
+                )
+            ]
     else:
-        # Word not found
+        # Word not found in any dictionary
         results = [
             InlineQueryResultArticle(
                 id="not_found",
